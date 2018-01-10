@@ -40,7 +40,13 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.wso2.carbon.apimgt.api.APIManagementException;
-import org.wso2.carbon.apimgt.api.model.*;
+import org.wso2.carbon.apimgt.api.model.AccessTokenRequest;
+import org.wso2.carbon.apimgt.api.model.KeyManagerConfiguration;
+import org.wso2.carbon.apimgt.api.model.OAuthAppRequest;
+import org.wso2.carbon.apimgt.api.model.OAuthApplicationInfo;
+import org.wso2.carbon.apimgt.api.model.AccessTokenInfo;
+import org.wso2.carbon.apimgt.api.model.API;
+import org.wso2.carbon.apimgt.api.model.ApplicationConstants;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.AbstractKeyManager;
 import org.wso2.carbon.apimgt.impl.factory.KeyManagerHolder;
@@ -49,7 +55,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.Base64;
 
 /**
  * This class provides the implementation to use "Okta" for managing
@@ -82,7 +95,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
         OAuthApplicationInfo oAuthApplicationInfo = oAuthAppRequest.getOAuthApplicationInfo();
         String clientName = oAuthApplicationInfo.getClientName();
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Creating an OAuth Client in OKTA Authorization Server with application name %s",
+            log.debug(String.format("Creating an OAuth client in Okta authorization server with application name %s",
                     clientName));
         }
         // Getting Client Instance Url and API Key from Config.
@@ -99,7 +112,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
             // Create the JSON Payload that should be sent to OAuth Server.
             String jsonPayload = createJsonPayloadFromOauthApplication(oAuthApplicationInfo, paramMap);
             if (log.isDebugEnabled()) {
-                log.debug(String.format("Payload to create new client : %s for application %s", jsonPayload,
+                log.debug(String.format("Payload to create a new client : %s for the application %s", jsonPayload,
                         clientName));
             }
             HttpPost httpPost = new HttpPost(registrationEndpoint);
@@ -109,7 +122,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
             httpPost.setHeader(OktaConstants.AUTHORIZATION, OktaConstants.AUTHENTICATION_SSWS + apiKey);
 
             if (log.isDebugEnabled()) {
-                log.debug(String.format("Invoking HTTP request to create new client in Okta for application %s",
+                log.debug(String.format("Invoking HTTP request to create new client in Okta for the application %s",
                         clientName));
             }
             HttpResponse response = httpClient.execute(httpPost);
@@ -128,15 +141,15 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     return oAuthApplicationInfo;
                 }
             } else {
-                handleException(String.format("Some thing wrong here while registering the new client in Okta, " +
+                handleException(String.format("Something wrong while registering the new client in Okta. " +
                         "Response : %s", responseObject.toJSONString()));
             }
         } catch (UnsupportedEncodingException e) {
-            handleException("Encoding for the Response not-supported.", e);
+            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED, e);
         } catch (ParseException e) {
             handleException(OktaConstants.ERROR_WHILE_PARSE_RESPONSE, e);
         } catch (IOException e) {
-            handleException("Error while reading response body ", e);
+            handleException("Error while reading response body", e);
         } finally {
             closeResources(reader, httpClient);
         }
@@ -161,7 +174,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
         // We have to send the client id with the update request.
         String clientId = oAuthApplicationInfo.getClientId();
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Updating an OAuth Client in OKTA Authorization Server for Consumer Key %s",
+            log.debug(String.format("Updating an OAuth client in Okta authorization server for the Consumer Key %s",
                     clientId));
         }
         // Getting Client Instance Url and API Key from Config.
@@ -180,7 +193,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
             // Create the JSON Payload that should be sent to OAuth Server.
             String jsonPayload = createJsonPayloadFromOauthApplication(oAuthApplicationInfo, paramMap);
             if (log.isDebugEnabled()) {
-                log.debug(String.format("Payload to update an OAuth client : %s for Consumer Key %s", jsonPayload,
+                log.debug(String.format("Payload to update an OAuth client : %s for the Consumer Key %s", jsonPayload,
                         clientId));
             }
             HttpPut httpPut = new HttpPut(registrationEndpoint);
@@ -203,12 +216,11 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     handleException("ResponseObject is empty. Can not return oAuthApplicationInfo.");
                 }
             } else {
-                handleException(String.format("Some thing wrong here when updating the Client with Consumer Key %s" +
+                handleException(String.format("Something wrong here when updating the Client with Consumer Key %s" +
                         " : Response: %s", clientId, responseObject.toJSONString()));
             }
         } catch (UnsupportedEncodingException e) {
-            handleException(String.format("Some thing wrong here when Updating a Client for Consumer Key %s", clientId),
-                    e);
+            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED, e);
         } catch (ParseException e) {
             handleException(OktaConstants.ERROR_WHILE_PARSE_RESPONSE, e);
         } catch (IOException e) {
@@ -228,7 +240,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
     @Override
     public void deleteApplication(String clientId) throws APIManagementException {
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Deleting an OAuth Client in OKTA Authorization Server for Consumer Key: %s",
+            log.debug(String.format("Deleting an OAuth client in Okta authorization server for the Consumer Key: %s",
                     clientId));
         }
         // Getting Client Instance Url and API Key from Config.
@@ -244,20 +256,21 @@ public class OktaOAuthClient extends AbstractKeyManager {
             // Set Authorization Header, with API Key.
             httpDelete.addHeader(OktaConstants.AUTHORIZATION, OktaConstants.AUTHENTICATION_SSWS + apiKey);
             if (log.isDebugEnabled()) {
-                log.debug(String.format("Invoking HTTP request to delete the client for Consumer Key %s", clientId));
+                log.debug(String.format("Invoking HTTP request to delete the client for the Consumer Key %s", clientId));
             }
             HttpResponse response = httpClient.execute(httpDelete);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == HttpStatus.SC_NO_CONTENT) {
                 if (log.isDebugEnabled()) {
-                    log.debug(String.format("OAuth Client for Consumer Key %s has been successfully deleted", clientId));
+                    log.debug(String.format("OAuth Client for the Consumer Key %s has been successfully deleted",
+                            clientId));
                 }
             } else {
                 HttpEntity entity = response.getEntity();
                 reader = new BufferedReader(new InputStreamReader(entity.getContent(), OktaConstants.UTF_8));
                 JSONObject responseObject = getParsedObjectByReader(reader);
-                handleException(String.format("Problem occurred while deleting client for Consumer Key %s Response : %s"
-                        , clientId, responseObject.toJSONString()));
+                handleException(String.format("Problem occurred while deleting client for the Consumer Key %s." +
+                                " Response : %s", clientId, responseObject.toJSONString()));
             }
         } catch (IOException e) {
             handleException("Error while reading response body from Server ", e);
@@ -278,8 +291,8 @@ public class OktaOAuthClient extends AbstractKeyManager {
     @Override
     public OAuthApplicationInfo retrieveApplication(String clientId) throws APIManagementException {
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Retrieving an OAuth Client from OKTA Authorization Server for Consumer Key: %s",
-                    clientId));
+            log.debug(String.format("Retrieving an OAuth client from Okta authorization server for the Consumer Key: %s"
+                    , clientId));
         }
         // Getting Client Instance Url and API Key from Config.
         String oktaInstanceUrl = configuration.getParameter(OktaConstants.OKTA_INSTANCE_URL);
@@ -296,7 +309,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
             // Set authorization header, with API key.
             request.addHeader(OktaConstants.AUTHORIZATION, OktaConstants.AUTHENTICATION_SSWS + apiKey);
             if (log.isDebugEnabled()) {
-                log.debug(String.format("Invoking HTTP request to get the client details for Consumer Key %s",
+                log.debug(String.format("Invoking HTTP request to get the client details for the Consumer Key %s",
                         clientId));
             }
             HttpResponse response = httpClient.execute(request);
@@ -310,7 +323,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
                 responseJSON = parser.parse(reader);
                 return createOAuthAppInfoFromResponse((JSONObject) responseJSON);
             } else {
-                handleException(String.format("Something went wrong while retrieving client for consumer key %s",
+                handleException(String.format("Something went wrong while retrieving client for the Consumer Key %s",
                         clientId));
             }
         } catch (ParseException e) {
@@ -338,7 +351,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
         String clientId = accessTokenRequest.getClientId();
         String clientSecret = accessTokenRequest.getClientSecret();
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Get new client access token from Authorization Server for Consumer Key %s",
+            log.debug(String.format("Get new client access token from authorization server for the Consumer Key %s",
                     clientId));
         }
         if (StringUtils.isNotEmpty(accessToken)) {
@@ -352,25 +365,24 @@ public class OktaOAuthClient extends AbstractKeyManager {
         parameters.add(new BasicNameValuePair(OktaConstants.GRANT_TYPE, (String) grantType));
         String scopeString = convertToString(accessTokenRequest.getScope());
         if (StringUtils.isEmpty(scopeString)) {
-            handleException(String.format("Scope cannot be empty for Consumer Key %s", clientId));
+            handleException(String.format("Scope cannot be empty for the Consumer Key %s", clientId));
         } else {
             parameters.add(new BasicNameValuePair(OktaConstants.ACCESS_TOKEN_SCOPE, scopeString));
         }
 
         JSONObject responseJSON = getAccessToken(clientId, clientSecret, parameters);
-
         if (responseJSON != null) {
             updateTokenInfo(tokenInfo, responseJSON);
             if (log.isDebugEnabled()) {
-                log.debug(String.format("OAuth token successfully validated for Consumer Key %s", clientId));
+                log.debug(String.format("OAuth token has been successfully validated for the Consumer Key %s",
+                        clientId));
             }
-
             return tokenInfo;
         } else {
             tokenInfo.setTokenValid(false);
             tokenInfo.setErrorcode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
             if (log.isDebugEnabled()) {
-                log.debug(String.format("OAuth token failed to validate for Consumer Key %s", clientId));
+                log.debug(String.format("OAuth token validation failed for the Consumer Key %s", clientId));
             }
         }
 
@@ -453,12 +465,12 @@ public class OktaOAuthClient extends AbstractKeyManager {
                 if (params.get(OktaConstants.CLIENT_SECRET) != null) {
                     oAuthApplicationInfo.setClientSecret((String) params.get(OktaConstants.CLIENT_SECRET));
                 }
-
                 oAuthApplicationInfo.putAll(params);
+
                 return oAuthApplicationInfo;
             }
         } catch (ParseException e) {
-            handleException("Error occurred while parsing JSON String", e);
+            handleException("Error occurred while parsing JSON string", e);
         }
         return null;
     }
@@ -473,7 +485,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
     @Override
     public AccessTokenInfo getTokenMetaData(String accessToken) throws APIManagementException {
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Getting access token metadata from Authorization Server. Access token %s",
+            log.debug(String.format("Getting access token metadata from authorization server. Access token %s",
                     accessToken));
         }
         AccessTokenInfo tokenInfo = new AccessTokenInfo();
@@ -498,7 +510,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
             httpPost.setEntity(new UrlEncodedFormEntity(parameters));
             httpPost.setHeader(OktaConstants.AUTHORIZATION, OktaConstants.AUTHENTICATION_BASIC + encodedCredentials);
             if (log.isDebugEnabled()) {
-                log.debug("Invoking HTTP request to get token info.");
+                log.debug("Invoking HTTP request to get access token info.");
             }
             HttpResponse response = httpClient.execute(httpPost);
             int statusCode = response.getStatusLine().getStatusCode();
@@ -510,7 +522,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
                 responseJSON = getParsedObjectByReader(reader);
 
                 if (responseJSON == null) {
-                    log.error(String.format("Invalid Token %s", accessToken));
+                    log.error(String.format("Invalid token %s", accessToken));
                     tokenInfo.setTokenValid(false);
                     tokenInfo.setErrorcode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
                     return tokenInfo;
@@ -547,7 +559,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     return tokenInfo;
                 }
             } else {
-                log.error(String.format("Invalid Token %s", accessToken));
+                log.error(String.format("Invalid token %s", accessToken));
                 tokenInfo.setTokenValid(false);
                 tokenInfo.setErrorcode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
                 return tokenInfo;
@@ -555,9 +567,9 @@ public class OktaOAuthClient extends AbstractKeyManager {
         } catch (ParseException e) {
             handleException(OktaConstants.ERROR_WHILE_PARSE_RESPONSE + e.getMessage(), e);
         } catch (UnsupportedEncodingException e) {
-            handleException(OktaConstants.ERROR_CHARACTOR_ENCODING_NOT_SUPPORTED + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED + e.getMessage(), e);
         } catch (ClientProtocolException e) {
-            handleException("HTTP request error has occurred while sending request to OAuth Provider. " +
+            handleException("HTTP request error has occurred while sending request to OAuth provider. " +
                     e.getMessage(), e);
         } catch (IOException e) {
             handleException(OktaConstants.ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER + e.getMessage(), e);
@@ -638,7 +650,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
                                                          Map<String, Object> paramMap) throws APIManagementException {
         String clientName = oAuthApplicationInfo.getClientName();
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Creating JsonPayload from Oauth Application info for the application: %s",
+            log.debug(String.format("Creating json payload from Oauth application info for the application: %s",
                     clientName));
         }
         if (StringUtils.isNotEmpty(clientName)) {
@@ -647,7 +659,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
 
         String clientRedirectUri = oAuthApplicationInfo.getCallBackURL();
         if (StringUtils.isEmpty(clientRedirectUri)) {
-            handleException("Mandatory parameter CallBackURL is missing");
+            handleException("Mandatory parameter CallBack URL is missing");
         }
         List<String> redirectUris = Collections.singletonList(clientRedirectUri);
         paramMap.put(OktaConstants.CLIENT_REDIRECT_URIS, redirectUris);
@@ -724,7 +736,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
         OAuthApplicationInfo appInfo = new OAuthApplicationInfo();
         String clientName = (String) responseMap.get(OktaConstants.CLIENT_NAME);
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Create OAuth App Info From Response for the application: %s",
+            log.debug(String.format("Create OAuth app info from response for the application: %s",
                     clientName));
         }
         appInfo.setClientName(clientName);
@@ -788,7 +800,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
      */
     private void revokeAccessToken(String clientId, String clientSecret, String accessToken) throws APIManagementException {
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Revoke access token from Authorization Server. Access token: %s", accessToken));
+            log.debug(String.format("Revoke access token from authorization Server. Access token: %s", accessToken));
         }
 
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
@@ -814,12 +826,11 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     OktaConstants.REVOKE_ENDPOINT);
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             String encodedCredentials = getEncodedCredentials(clientId, clientSecret);
-
             httpPost.setHeader(OktaConstants.AUTHORIZATION, OktaConstants.AUTHENTICATION_BASIC + encodedCredentials);
+
             if (log.isDebugEnabled()) {
                 log.debug("Invoking HTTP request to revoke access token.");
             }
-
             HttpResponse response = httpClient.execute(httpPost);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == HttpStatus.SC_OK) {
@@ -831,7 +842,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
                         clientId));
             }
         } catch (UnsupportedEncodingException e) {
-            handleException(OktaConstants.ERROR_CHARACTOR_ENCODING_NOT_SUPPORTED + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED + e.getMessage(), e);
         } catch (ClientProtocolException e) {
             handleException("HTTP request error has occurred while sending request to OAuth Provider. " +
                     e.getMessage(), e);
@@ -889,11 +900,11 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     return responseJSON;
                 }
             } else {
-                log.error(String.format("Failed to get accessToken for clientId %s JSON Response: %s", clientId,
+                log.error(String.format("Failed to get accessToken for Consumer Key %s. Response: %s", clientId,
                         responseJSON.toJSONString()));
             }
         } catch (UnsupportedEncodingException e) {
-            handleException(OktaConstants.ERROR_CHARACTOR_ENCODING_NOT_SUPPORTED + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED + e.getMessage(), e);
         } catch (ParseException e) {
             handleException(OktaConstants.ERROR_WHILE_PARSE_RESPONSE + e.getMessage(), e);
         } catch (IOException e) {
@@ -969,7 +980,6 @@ public class OktaOAuthClient extends AbstractKeyManager {
                 sb.append(s);
                 sb.append(" ");
             }
-
             return sb.toString().trim();
         }
 
@@ -1005,8 +1015,9 @@ public class OktaOAuthClient extends AbstractKeyManager {
             encodedCredentials = Base64.getEncoder().encodeToString((clientId + ":" + clientSecret)
                     .getBytes(OktaConstants.UTF_8));
         } catch (UnsupportedEncodingException e) {
-            throw new APIManagementException("Unsupported encoding: ", e);
+            throw new APIManagementException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED, e);
         }
+
         return encodedCredentials;
     }
 

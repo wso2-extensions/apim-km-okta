@@ -20,12 +20,11 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>org.wso2.okta.client</groupId>
     <artifactId>OKTA-OAuth-Client</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
-    <name>Client code for using Okta OAuth as the Authorization Server</name>
+    <name>Client implementation to integrate with Okta Authorization Server</name>
 
     <dependencies>
         <dependency>
@@ -36,12 +35,12 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
-            <version>6.1.66</version>
+            <version>${carbon.apimgt.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
-            <version>6.1.66</version>
+            <version>${carbon.apimgt.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -51,15 +50,14 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.keymgt</artifactId>
-            <version>6.1.66</version>
+            <version>${carbon.apimgt.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.hostobjects</artifactId>
-            <version>6.1.66</version>
+            <version>${carbon.apimgt.version}</version>
         </dependency>
     </dependencies>
-
     <repositories>
         <repository>
             <id>wso2-nexus</id>
@@ -72,7 +70,6 @@
             </releases>
         </repository>
     </repositories>
-
     <build>
         <plugins>
             <plugin>
@@ -101,4 +98,7 @@
             </plugin>
         </plugins>
     </build>
+    <properties>
+        <carbon.apimgt.version>6.1.66</carbon.apimgt.version>
+    </properties>
 </project>

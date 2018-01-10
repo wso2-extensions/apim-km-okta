@@ -67,8 +67,9 @@ public class OktaConstants {
     public static final String TOKEN_GRANT_TYPE = "tokenGrantType";
     public static final String UPDATE_APP_IN_OKTA = "updateAppInOkta";
     public static final String ERROR_WHILE_PARSE_RESPONSE = "Error while parsing response json";
-    public static final String ERROR_CHARACTOR_ENCODING_NOT_SUPPORTED = "The Character Encoding is not supported";
-    public static final String ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER = "Error has occurred while reading or closing buffer reader";
+    public static final String ERROR_ENCODING_METHOD_NOT_SUPPORTED = "Encoding method is not supported";
+    public static final String ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER = "Error has occurred while reading " +
+            "or closing buffer reader";
 
     OktaConstants() {
     }
