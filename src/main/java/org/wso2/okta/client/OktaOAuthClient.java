@@ -70,13 +70,12 @@ import java.util.Base64;
  */
 public class OktaOAuthClient extends AbstractKeyManager {
     private static final Log log = LogFactory.getLog(OktaOAuthClient.class);
-
     private KeyManagerConfiguration configuration;
 
     /**
      * {@code APIManagerComponent} calls this method, passing KeyManagerConfiguration as a {@code String}.
      *
-     * @param keyManagerConfiguration Configuration as a {@link org.wso2.carbon.apimgt.api.model.KeyManagerConfiguration}
+     * @param keyManagerConfiguration Configuration as a {@link KeyManagerConfiguration}
      * @throws APIManagementException This is the custom exception class for API management.
      */
     @Override
@@ -128,6 +127,10 @@ public class OktaOAuthClient extends AbstractKeyManager {
             HttpResponse response = httpClient.execute(httpPost);
             int statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
+            if (entity == null) {
+                handleException(String.format(OktaConstants.STRING_FORMAT,
+                        OktaConstants.ERROR_COULD_NOT_READ_HTTP_ENTITY, response));
+            }
             reader = new BufferedReader(new InputStreamReader(entity.getContent(), OktaConstants.UTF_8));
             JSONObject responseObject = getParsedObjectByReader(reader);
 
@@ -137,11 +140,10 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     oAuthApplicationInfo = createOAuthAppInfoFromResponse(responseObject);
                     oAuthApplicationInfo.addParameter(OktaConstants.TOKEN_SCOPE, scope);
                     oAuthApplicationInfo.addParameter(OktaConstants.TOKEN_GRANT_TYPE, tokenGrantType);
-
                     return oAuthApplicationInfo;
                 }
             } else {
-                handleException(String.format("Something wrong while registering the new client in Okta. " +
+                handleException(String.format("Error occured while registering the new client in Okta. " +
                         "Response : %s", responseObject.toJSONString()));
             }
         } catch (UnsupportedEncodingException e) {
@@ -207,6 +209,9 @@ public class OktaOAuthClient extends AbstractKeyManager {
             HttpResponse response = httpClient.execute(httpPut);
             int statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
+            if (entity == null) {
+                handleException(String.format(OktaConstants.STRING_FORMAT, OktaConstants.ERROR_COULD_NOT_READ_HTTP_ENTITY, response));
+            }
             reader = new BufferedReader(new InputStreamReader(entity.getContent(), OktaConstants.UTF_8));
             JSONObject responseObject = getParsedObjectByReader(reader);
             if (statusCode == HttpStatus.SC_OK) {
@@ -216,7 +221,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     handleException("ResponseObject is empty. Can not return oAuthApplicationInfo.");
                 }
             } else {
-                handleException(String.format("Something wrong here when updating the Client with Consumer Key %s" +
+                handleException(String.format("Error occured when updating the Client with Consumer Key %s" +
                         " : Response: %s", clientId, responseObject.toJSONString()));
             }
         } catch (UnsupportedEncodingException e) {
@@ -267,10 +272,14 @@ public class OktaOAuthClient extends AbstractKeyManager {
                 }
             } else {
                 HttpEntity entity = response.getEntity();
+                if (entity == null) {
+                    handleException(String.format(OktaConstants.STRING_FORMAT,
+                            OktaConstants.ERROR_COULD_NOT_READ_HTTP_ENTITY, response));
+                }
                 reader = new BufferedReader(new InputStreamReader(entity.getContent(), OktaConstants.UTF_8));
                 JSONObject responseObject = getParsedObjectByReader(reader);
                 handleException(String.format("Problem occurred while deleting client for the Consumer Key %s." +
-                                " Response : %s", clientId, responseObject.toJSONString()));
+                        " Response : %s", clientId, responseObject.toJSONString()));
             }
         } catch (IOException e) {
             handleException("Error while reading response body from Server ", e);
@@ -315,6 +324,10 @@ public class OktaOAuthClient extends AbstractKeyManager {
             HttpResponse response = httpClient.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
+            if (entity == null) {
+                handleException(String.format(OktaConstants.STRING_FORMAT,
+                        OktaConstants.ERROR_COULD_NOT_READ_HTTP_ENTITY, response));
+            }
             reader = new BufferedReader(new InputStreamReader(entity.getContent(), OktaConstants.UTF_8));
             Object responseJSON;
 
@@ -323,7 +336,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
                 responseJSON = parser.parse(reader);
                 return createOAuthAppInfoFromResponse((JSONObject) responseJSON);
             } else {
-                handleException(String.format("Something went wrong while retrieving client for the Consumer Key %s",
+                handleException(String.format("Error occured while retrieving client for the Consumer Key %s",
                         clientId));
             }
         } catch (ParseException e) {
@@ -509,15 +522,16 @@ public class OktaOAuthClient extends AbstractKeyManager {
             HttpPost httpPost = new HttpPost(introspectionURL);
             httpPost.setEntity(new UrlEncodedFormEntity(parameters));
             httpPost.setHeader(OktaConstants.AUTHORIZATION, OktaConstants.AUTHENTICATION_BASIC + encodedCredentials);
-            if (log.isDebugEnabled()) {
-                log.debug("Invoking HTTP request to get access token info.");
-            }
             HttpResponse response = httpClient.execute(httpPost);
             int statusCode = response.getStatusLine().getStatusCode();
             JSONObject responseJSON;
 
             if (HttpStatus.SC_OK == statusCode) {
                 HttpEntity entity = response.getEntity();
+                if (entity == null) {
+                    handleException(String.format(OktaConstants.STRING_FORMAT,
+                            OktaConstants.ERROR_COULD_NOT_READ_HTTP_ENTITY, response));
+                }
                 reader = new BufferedReader(new InputStreamReader(entity.getContent(), OktaConstants.UTF_8));
                 responseJSON = getParsedObjectByReader(reader);
 
@@ -565,14 +579,13 @@ public class OktaOAuthClient extends AbstractKeyManager {
                 return tokenInfo;
             }
         } catch (ParseException e) {
-            handleException(OktaConstants.ERROR_WHILE_PARSE_RESPONSE + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_WHILE_PARSE_RESPONSE, e);
         } catch (UnsupportedEncodingException e) {
-            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED, e);
         } catch (ClientProtocolException e) {
-            handleException("HTTP request error has occurred while sending request to OAuth provider. " +
-                    e.getMessage(), e);
+            handleException("HTTP request error has occurred while sending request to OAuth provider. ", e);
         } catch (IOException e) {
-            handleException(OktaConstants.ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER, e);
         } finally {
             closeResources(reader, httpClient);
         }
@@ -623,7 +636,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
     }
 
     @Override
-    public void deleteMappedApplication(String s) throws APIManagementException {
+    public void deleteMappedApplication(String clientId) throws APIManagementException {
         //Not applicable
     }
 
@@ -747,45 +760,34 @@ public class OktaOAuthClient extends AbstractKeyManager {
             appInfo.setCallBackURL((String) callbackUrl.toArray()[0]);
         }
         Object clientIdIssuedAt = responseMap.get(OktaConstants.CLIENT_ID_ISSUED_AT);
-        if (clientIdIssuedAt != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_ID_ISSUED_AT, clientIdIssuedAt);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_ID_ISSUED_AT, clientIdIssuedAt);
+
         Object clientSecretExpiresAt = responseMap.get(OktaConstants.CLIENT_SECRET_EXPIRES_AT);
-        if (clientSecretExpiresAt != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_SECRET_EXPIRES_AT, clientSecretExpiresAt);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_SECRET_EXPIRES_AT, clientSecretExpiresAt);
+
         Object clientUri = responseMap.get(OktaConstants.CLIENT_URI);
-        if (clientUri != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_URI, clientUri);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_URI, clientUri);
+
         Object logoUri = responseMap.get(OktaConstants.CLIENT_LOGO_URI);
-        if (logoUri != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_LOGO_URI, logoUri);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_LOGO_URI, logoUri);
+
         Object applicationType = responseMap.get(OktaConstants.CLIENT_APPLICATION_TYPE);
-        if (applicationType != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_APPLICATION_TYPE, applicationType);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_APPLICATION_TYPE, applicationType);
+
         Object postLogoutRedirectUris = responseMap.get(OktaConstants.CLIENT_POST_LOGOUT_REDIRECT_URIS);
-        if (postLogoutRedirectUris != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_POST_LOGOUT_REDIRECT_URIS, postLogoutRedirectUris);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_POST_LOGOUT_REDIRECT_URIS, postLogoutRedirectUris);
+
         Object responseTypes = responseMap.get(OktaConstants.CLIENT_RESPONSE_TYPES);
-        if (responseTypes != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_RESPONSE_TYPES, responseTypes);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_RESPONSE_TYPES, responseTypes);
+
         Object grantTypes = responseMap.get(OktaConstants.CLIENT_GRANT_TYPES);
-        if (grantTypes != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_GRANT_TYPES, grantTypes);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_GRANT_TYPES, grantTypes);
+
         Object tokenEndpointAuthMethod = responseMap.get(OktaConstants.CLIENT_TOKEN_ENDPOINT_AUTH_METHOD);
-        if (tokenEndpointAuthMethod != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_TOKEN_ENDPOINT_AUTH_METHOD, tokenEndpointAuthMethod);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_TOKEN_ENDPOINT_AUTH_METHOD, tokenEndpointAuthMethod);
+
         Object initiateLoginUri = responseMap.get(OktaConstants.CLIENT_INITIATE_LOGIN_URI);
-        if (initiateLoginUri != null) {
-            appInfo.addParameter(OktaConstants.CLIENT_INITIATE_LOGIN_URI, initiateLoginUri);
-        }
+        appInfo.addParameter(OktaConstants.CLIENT_INITIATE_LOGIN_URI, initiateLoginUri);
 
         return appInfo;
     }
@@ -798,7 +800,8 @@ public class OktaOAuthClient extends AbstractKeyManager {
      * @param accessToken  token being revoked
      * @throws APIManagementException This is the custom exception class for API management.
      */
-    private void revokeAccessToken(String clientId, String clientSecret, String accessToken) throws APIManagementException {
+    private void revokeAccessToken(String clientId, String clientSecret, String accessToken)
+            throws APIManagementException {
         if (log.isDebugEnabled()) {
             log.debug(String.format("Revoke access token from authorization Server. Access token: %s", accessToken));
         }
@@ -842,12 +845,11 @@ public class OktaOAuthClient extends AbstractKeyManager {
                         clientId));
             }
         } catch (UnsupportedEncodingException e) {
-            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED, e);
         } catch (ClientProtocolException e) {
-            handleException("HTTP request error has occurred while sending request to OAuth Provider. " +
-                    e.getMessage(), e);
+            handleException("HTTP request error has occurred while sending request to OAuth Provider. ", e);
         } catch (IOException e) {
-            handleException(OktaConstants.ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER, e);
         } finally {
             try {
                 if (httpClient != null) {
@@ -888,6 +890,10 @@ public class OktaOAuthClient extends AbstractKeyManager {
             HttpResponse response = httpClient.execute(httpPost);
             int statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
+            if (entity == null) {
+                handleException(String.format(OktaConstants.STRING_FORMAT,
+                        OktaConstants.ERROR_COULD_NOT_READ_HTTP_ENTITY, response));
+            }
             reader = new BufferedReader(new InputStreamReader(entity.getContent(), OktaConstants.UTF_8));
             JSONObject responseJSON = getParsedObjectByReader(reader);
 
@@ -904,11 +910,11 @@ public class OktaOAuthClient extends AbstractKeyManager {
                         responseJSON.toJSONString()));
             }
         } catch (UnsupportedEncodingException e) {
-            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED, e);
         } catch (ParseException e) {
-            handleException(OktaConstants.ERROR_WHILE_PARSE_RESPONSE + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_WHILE_PARSE_RESPONSE, e);
         } catch (IOException e) {
-            handleException(OktaConstants.ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER + e.getMessage(), e);
+            handleException(OktaConstants.ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER, e);
         } finally {
             closeResources(reader, httpClient);
         }
@@ -924,7 +930,8 @@ public class OktaOAuthClient extends AbstractKeyManager {
      */
     private AccessTokenInfo updateTokenInfo(AccessTokenInfo tokenInfo, JSONObject responseJSON) {
         if (log.isDebugEnabled()) {
-            log.debug("Update the access token info after getting new access token.");
+            log.debug(String.format("Update the access token info with JSON response: %s, after getting " +
+                    "new access token.", responseJSON));
         }
         tokenInfo.setAccessToken((String) responseJSON.get(OktaConstants.ACCESS_TOKEN));
         Long expireTime = (Long) responseJSON.get(OktaConstants.ACCESS_TOKEN_EXPIRES_IN);
@@ -998,7 +1005,6 @@ public class OktaOAuthClient extends AbstractKeyManager {
         if (reader != null) {
             parsedObject = (JSONObject) parser.parse(reader);
         }
-
         return parsedObject;
     }
 

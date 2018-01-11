@@ -17,6 +17,9 @@
  */
 package org.wso2.okta.client;
 
+/**
+ * This class will hold constants related to Okta key manager implementation.
+ */
 public class OktaConstants {
     public static final String UTF_8 = "UTF-8";
     public static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
@@ -68,6 +71,8 @@ public class OktaConstants {
     public static final String UPDATE_APP_IN_OKTA = "updateAppInOkta";
     public static final String ERROR_WHILE_PARSE_RESPONSE = "Error while parsing response json";
     public static final String ERROR_ENCODING_METHOD_NOT_SUPPORTED = "Encoding method is not supported";
+    public static final String ERROR_COULD_NOT_READ_HTTP_ENTITY = "Could not read http entity for response";
+    public static final String STRING_FORMAT = "%s %s";
     public static final String ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER = "Error has occurred while reading " +
             "or closing buffer reader";
 
