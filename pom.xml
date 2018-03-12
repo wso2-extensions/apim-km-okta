@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.okta.client</groupId>
     <artifactId>OKTA-OAuth-Client</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>Client implementation to integrate with Okta Authorization Server</name>
     <url>http://wso2.org</url>
