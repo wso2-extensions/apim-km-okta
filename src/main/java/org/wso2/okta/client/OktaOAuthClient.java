@@ -544,8 +544,8 @@ public class OktaOAuthClient extends AbstractKeyManager {
                 tokenInfo.setTokenValid((Boolean) responseJSON.get(OktaConstants.ACCESS_TOKEN_ACTIVE));
 
                 if (tokenInfo.isTokenValid()) {
-                    long expiryTime = (Long) responseJSON.get(OktaConstants.ACCESS_TOKEN_EXPIRY);
-                    long issuedTime = (Long) responseJSON.get(OktaConstants.ACCESS_TOKEN_ISSUED);
+                    long expiryTime = (Long) responseJSON.get(OktaConstants.ACCESS_TOKEN_EXPIRY) * 1000;
+                    long issuedTime = (Long) responseJSON.get(OktaConstants.ACCESS_TOKEN_ISSUED) * 1000;
                     tokenInfo.setValidityPeriod(expiryTime - issuedTime);
 
                     String tokScopes = (String) responseJSON.get(OktaConstants.ACCESS_TOKEN_SCOPE);
@@ -941,7 +941,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
             tokenInfo.setErrorcode(APIConstants.KeyValidationStatus.API_AUTH_INVALID_CREDENTIALS);
             return tokenInfo;
         }
-        tokenInfo.setValidityPeriod(expireTime);
+        tokenInfo.setValidityPeriod(expireTime * 1000);
 
         String tokenScopes = (String) responseJSON.get(OktaConstants.ACCESS_TOKEN_SCOPE);
         if (StringUtils.isNotEmpty(tokenScopes)) {
