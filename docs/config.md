@@ -51,7 +51,7 @@ Create an Okta developer account. Get the Instance URL, authorization server ID,
 
 ### Step 2: Configure WSO2 API Manager
 
-1. Download latest OKTA-OAuth-Client-x.x.x.jar from [Here](https://github.com/wso2-extensions/apim-keymanager-okta/releases).
+1. Download latest OKTA-OAuth-Client-x.x.x.jar from [here](https://github.com/wso2-extensions/apim-keymanager-okta/releases).
 2. Copy that JAR file into the `<API-M_HOME>/repository/components/lib` directory.
 3. Uncomment the `<APIKeyManager>` parameter in the `<API-M_HOME>/repository/conf/api-manager.xml` file. 
 Change the values based on your third-party API.
@@ -60,7 +60,7 @@ Change the values based on your third-party API.
 
 >> **Note :** The `org.wso2.okta.client.OktaOAuthClient` class, mentioned in the following example, extends the Key Manager interface.
 
->> **Note :** Create a common application using `step 3: (3) & (4)`. Obtain the common client id and secret then update the  `<client_id>` and `<client_secret>`. This is only to authenticate with introspect endpoint.
+>> **Note :** Create a common application using `step 3: (3) & (4)`. Obtain the common client id and secret then update the  `<client_id>` and `<client_secret>`. This is only used to authenticate with introspect endpoint.
 
 ```xml
     <APIKeyManager>
@@ -75,8 +75,8 @@ Change the values based on your third-party API.
     </APIKeyManager>
 ```
 4. The API Store sub theme is re-written to change the UI specifically for this scenario. Follow the steps below to configure the UI :
-    1. Copy this `locale_default.json` file from [Here](https://github.com/wso2-extensions/apim-keymanager-okta/blob/OKTA-OAuth-Client-1.0.0/src/main/resources/locale_default.json) and put it into the `<API-M_HOME>/repository/deployment/server/jaggeryapps/store/site/conf/locales/jaggery` directory.
-    2. Copy this `okta` theme folder from [Here](https://github.com/wso2-extensions/apim-keymanager-okta/tree/OKTA-OAuth-Client-1.0.0/src/main/resources/okta)
+    1. Copy this `locale_default.json` file from [here](https://github.com/wso2-extensions/apim-keymanager-okta/blob/OKTA-OAuth-Client-1.0.0/src/main/resources/locale_default.json) and put it into the `<API-M_HOME>/repository/deployment/server/jaggeryapps/store/site/conf/locales/jaggery` directory.
+    2. Copy this `okta` theme folder from [here](https://github.com/wso2-extensions/apim-keymanager-okta/tree/OKTA-OAuth-Client-1.0.0/src/main/resources/okta)
     3. Then paste the `okta` theme folder into the `<API-M_HOME>/repository/deployment/server/jaggeryapps/store/site/themes/wso2/subthemes` directory.
     4. Go to the `<API-M_HOME>/repository/deployment/server/jaggeryapps/store/site/conf` directory. Edit the `site.json` file as shown below.
     
@@ -131,7 +131,7 @@ You have connected WSO2 API Manager with a third-party Okta authorization server
        
        ![alt text](images/generate_keys.png)
        
-       | Element | Description /
+       | Element | Description |
        | ------------- |-------------|
        | Application Grant Types (Mandatory) | Select the grant types for the application. |
        | Callback URL (Mandatory) | Redirection URI string for use in redirect-based flows. E.g., http://google.lk/ |
@@ -178,7 +178,7 @@ You have connected WSO2 API Manager with a third-party Okta authorization server
             {"response_types":"code,token,id_token","grant_types":"refresh_token,authorization_code,implicit","token_endpoint_auth_method": "client_secret_basic","application_type": "web", "updateAppInOkta" : "true"}'
             ```
             
-        2. Encode them with a URL encoder[https://www.urlencoder.org/].
+        2. Encode them with a [URL encoder](https://www.urlencoder.org/).
         3. Use the encoded value for the jsonParams parameter as shown in the sample cURL command given below.
             ```
             curl 'https://localhost:9443/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag' -H 'Content-Type: application/x-www-form-urlencoded' -d 'action=updateClientApplication&application=OktaClientApp&keytype=PRODUCTION&callbackUrl=https://httpbin.org/get&jsonParams=%7B%22response_types%22%3A%22code%2Ctoken%2Cid_token%22%2C%22grant_types%22%3A%22refresh_token%2Cauthorization_code%2Cimplicit%22%2C%22token_endpoint_auth_method%22%3A%20%22client_secret_basic%22%2C%22application_type%22%3A%20%22web%22%2C%20%22updateAppInOkta%22%20%3A%20%22true%22%7D' -k -b cookies
