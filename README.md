@@ -7,3 +7,13 @@ by WSO2 API Manager. We have a sample client implementation that consumes APIs e
 ## Build
 
 mvn clean install
+
+## How You Can Contribute
+
+You can contribute to the Okta keymanager development by forking the github repository and sending your pull requests to 
+
+https://github.com/wso2-extensions/apim-keymanager-okta
+
+## Getting started
+
+To get started, go to [Integrate WSO2 API Store with an external IAM using the Okta OAuth authorization server](#docs/config.md).
