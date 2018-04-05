@@ -1,6 +1,6 @@
 # Integrate Okta as a Third Party Key Manager for WSO2 API Manager
 
-This Okta key manager implementation allows you to integrate the WSO2 API Store with WSO2 Identity and Access Management (IAM)
+This Okta key manager implementation allows you to integrate the WSO2 API Store with an external Identity and Access Management server (IAM)
 by using the Okta OAuth Authorization Server to manage the OAuth clients and tokens required
 by WSO2 API Manager. We have a sample client implementation that consumes the APIs exposed by Okta OAuth.
 

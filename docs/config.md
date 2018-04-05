@@ -1,13 +1,13 @@
-# Integrate WSO2 API Store with an WSO2 IAM using the Okta OAuth Authorization Server
+# Integrate WSO2 API Store with an external IAM using the Okta OAuth Authorization Server
 
-In this guide, we explain how to integrate the WSO2 API Store with WSO2 Identity and Access Management (IAM) using the Okta OAuth Authorization Server
+In this guide, we explain how to integrate the WSO2 API Store with an external Identity and Access Management server (IAM) using the Okta OAuth Authorization Server
 to manage the OAuth clients and tokens required by WSO2 API Manager. This is a sample client implementation that consumes APIs exposed by Okta OAuth.
  
 ## Follow the instructions below to configure the third-party Key Manager
 
 ### Step 1 : Prerequisites
 
-Create an Okta developer account. Get the Instance URL, authorization server ID, API Key and configure access policy rule.
+Create an Okta developer account. Get the Instance URL, authorization server ID, API Key and configure the access policy and the rule.
 
 1. Go to the [Okta sign up page](https://developer.okta.com/signup/). Create an Okta account and get the Okta instance URL.
 
