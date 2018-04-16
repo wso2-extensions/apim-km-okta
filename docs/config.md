@@ -216,6 +216,8 @@ You have connected WSO2 API Manager with a third-party Okta authorization server
     
          Fill out the required parameters and click Save. You will be redirected to the page that has application and access token details.
          
+         >>**Note :** If you have not provide consumer secret, the access token will not be generated.
+         
          >>**Note :** Please make a note of this Consumer Secret and Access Token values, as it will be the only one time that you will be able to view it.
 
     2. cURL command :

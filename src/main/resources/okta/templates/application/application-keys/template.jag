@@ -262,18 +262,18 @@ jagg.template("application/application-keys", function(inputs, outputs, jagg) {
                     <input type="text" required class="form-control ConsumerKey" title="ConsumerKey is mandatory field" id="ConsumerKey" name="ConsumerKey" autofocus="autofocus" placeholder="<%=i18n.localize("Consumer Key")%>" />
               </div>
               <div class="form-group">
-                    <label class="" for="ConsumerKey"><%=i18n.localize("Consumer Secret")%> <span class="requiredAstrix">*</span></label>
-                    <input type="text" required class="form-control MapAppConsumerSecret" title="ConsumerSecret is mandatory field" id="MapAppConsumerSecret" name="MapAppConsumerSecret" placeholder="<%=i18n.localize("Consumer Secret")%>" value="{{MapAppConsumerSecret}}"/>
+                    <label class="" for="ConsumerKey"><%=i18n.localize("Consumer Secret")%></label>
+                    <input type="text" class="form-control MapAppConsumerSecret" title="ConsumerSecret is mandatory field" id="MapAppConsumerSecret" name="MapAppConsumerSecret" placeholder="<%=i18n.localize("Consumer Secret")%>" value="{{MapAppConsumerSecret}}"/>
               </div>
 
               <div class="form-group">
-                    <label class="" for="ConsumerKey"><%=i18n.localize("Token Scope")%> <span class="requiredAstrix">*</span></label>
-                    <input type="text" required class="form-control token_scope" title="Token Scope is mandatory field" id="token_scope" name="token_scope" autofocus="autofocus" value="{{token_scope}}" placeholder="Token Scope" />
+                    <label class="" for="ConsumerKey"><%=i18n.localize("Token Scope")%></label>
+                    <input type="text" class="form-control token_scope" title="Token Scope is mandatory field" id="token_scope" name="token_scope" autofocus="autofocus" value="{{token_scope}}" placeholder="Token Scope" />
               </div>
 
               <div class="form-group">
-                    <label class="" for="ConsumerKey"><%=i18n.localize("Token Grant Type")%> <span class="requiredAstrix">*</span></label>
-                    <input type="text" required class="form-control token_grantType" title="Token Grant Type is mandatory field" id="token_grantType" autofocus="autofocus" value="{{token_grantType}}" name="token_grantType" placeholder="Token Grant Type" />
+                    <label class="" for="ConsumerKey"><%=i18n.localize("Token Grant Type")%></label>
+                    <input type="text" class="form-control token_grantType" title="Token Grant Type is mandatory field" id="token_grantType" autofocus="autofocus" value="{{token_grantType}}" name="token_grantType" placeholder="Token Grant Type" />
               </div>
               <div class="form-group">
                     <button  class="btn btn-primary provide_keys_save"><%=i18n.localize("Save")%></button>

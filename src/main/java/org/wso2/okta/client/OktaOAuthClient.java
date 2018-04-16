@@ -420,9 +420,12 @@ public class OktaOAuthClient extends AbstractKeyManager {
             tokenRequest = new AccessTokenRequest();
         }
         String clientName = oAuthApplication.getClientName();
-        if (oAuthApplication.getClientId() == null || oAuthApplication.getClientSecret() == null) {
-            throw new APIManagementException(String.format("Consumer key or Consumer Secret missing for the " +
-                    "Application: %s", clientName));
+        if (oAuthApplication.getClientId() == null) {
+            throw new APIManagementException(String.format("Consumer key is missing for the Application: %s",
+                    clientName));
+        }
+        if(oAuthApplication.getClientSecret() == null) {
+            log.error(String.format("Consumer Secret is missing for the Application: %s", clientName));
         }
         tokenRequest.setClientId(oAuthApplication.getClientId());
         tokenRequest.setClientSecret(oAuthApplication.getClientSecret());
