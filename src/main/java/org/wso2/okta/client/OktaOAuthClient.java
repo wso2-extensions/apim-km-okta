@@ -670,6 +670,12 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     clientName));
         }
         if (StringUtils.isNotEmpty(clientName)) {
+
+            // adding unique names based on key type to generate both Production and Sandbox keys from Store portal
+            String keytype = (String) oAuthApplicationInfo.getParameter(ApplicationConstants.APP_KEY_TYPE);
+            if (keytype != null) {
+                clientName += "_" + keytype;
+            }
             paramMap.put(OktaConstants.CLIENT_NAME, clientName);
         }
 
@@ -752,9 +758,11 @@ public class OktaOAuthClient extends AbstractKeyManager {
         OAuthApplicationInfo appInfo = new OAuthApplicationInfo();
         String clientName = (String) responseMap.get(OktaConstants.CLIENT_NAME);
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Create OAuth app info from response for the application: %s",
-                    clientName));
+            log.debug(String.format("Create OAuth app info from response for the application: %s", clientName));
         }
+        
+        appInfo.addParameter(ApplicationConstants.OAUTH_CLIENT_NAME, responseMap.get(OktaConstants.CLIENT_NAME));
+
         appInfo.setClientName(clientName);
         appInfo.setClientId((String) responseMap.get(OktaConstants.CLIENT_ID));
         appInfo.setClientSecret((String) responseMap.get(OktaConstants.CLIENT_SECRET));
