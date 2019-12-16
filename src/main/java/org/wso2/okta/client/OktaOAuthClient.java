@@ -50,6 +50,7 @@ import org.wso2.carbon.apimgt.api.model.ApplicationConstants;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.AbstractKeyManager;
 import org.wso2.carbon.apimgt.impl.factory.KeyManagerHolder;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -559,7 +560,8 @@ public class OktaOAuthClient extends AbstractKeyManager {
 
                     tokenInfo.setIssuedTime(issuedTime);
                     tokenInfo.setConsumerKey((String) responseJSON.get(OktaConstants.CLIENT_ID));
-                    tokenInfo.setEndUserName((String) responseJSON.get(OktaConstants.ACCESS_TOKEN_USER_NAME));
+                    tokenInfo.setEndUserName((String) responseJSON.get(OktaConstants.ACCESS_TOKEN_USER_NAME)+"@"+
+                            MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
                     tokenInfo.addParameter(OktaConstants.ACCESS_TOKEN_SUBJECT,
                             responseJSON.get(OktaConstants.ACCESS_TOKEN_SUBJECT));
                     tokenInfo.addParameter(OktaConstants.ACCESS_TOKEN_AUDIENCE,
