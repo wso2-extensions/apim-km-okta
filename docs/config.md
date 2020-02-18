@@ -249,14 +249,16 @@ You have connected WSO2 API Manager with a third-party Okta authorization server
     
     To delete an OAuth application in the Okta server, do the following.
 
-    1. Store UI: 
+    1. Dev Portal UI: 
         
-        Go to the Applications page in the WSO2 API Store. Click Delete to delete your application.
+        Go to the Applications page in the WSO2 Dev Portal. Click Delete to delete your application.
         ![alt text](images/delete_application.png)
         
     2. cURL command :
         ```
-        curl -k -X POST -b cookies https://localhost:9443/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag -d 'action=deleteAuthApplication&consumerKey=0oadf3m45jgYaadbJWb0h7'
+        curl -k -X DELETE \
+        -H "Authorization: Bearer e3f6a2f4-1b88-3458-8a39-99e54c7d283a" \
+        https://localhost:9443/api/am/store/v1/applications/4f320831-98eb-45a1-99eb-aa4c2b60c03f
         ```
         
 9.  **Provision an Out-of-Band OAuth Client :** Provision an OAuth client created in the Okta server.
