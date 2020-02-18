@@ -58,7 +58,7 @@ Create an Okta developer account. Get the Instance URL, authorization server ID,
     1. Go to the **Applications** tab and select **Add Application** button.
     2. Select **Web** type in the list and select next
         ![alt text](images/add_application_intro.png)
-    3. under the **Grant type allowed** section, tick **Client Credentials**
+    3. Under the **Grant type allowed** section, tick **Client Credentials**
     4. Once app is created, note down the **Client ID** and **Client secret** under **Client Credentials** section. 
 
 ### Step 2: Configure WSO2 API Manager
@@ -67,7 +67,7 @@ Create an Okta developer account. Get the Instance URL, authorization server ID,
 2. Copy that JAR file into the `<API-M_HOME>/repository/components/lib` directory.
 3. Uncomment or add the following parameters in the `<API-M_HOME>repository/conf/deployment.toml` file. Change the values based on your third-party API.
 
-```xml
+    ```xml
     [apim.oauth_config]
     set_jwt_as_opaque_token = true
 
@@ -82,7 +82,7 @@ Create an Okta developer account. Get the Instance URL, authorization server ID,
     apiKey = "xxxxxxxxxxxxxxxxxxxx"
     client_id = "0oa2b1ir5x9qbp5AS4x6"
     client_secret = "xxxxxxxxxxxxxxxxxxx"
-```
+    ```
     **Note**
     **oktaInstanceUrl** : Url generated in the section 1
     **defaultScope** : Scope defined in the point 3 in section 2
