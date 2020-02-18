@@ -65,6 +65,7 @@ public class OktaConstants {
     public static final String ACCESS_TOKEN_IDENTIFIER = "jti";
     public static final String ACCESS_TOKEN_EXPIRES_IN = "expires_in";
     public static final String OKTA_INSTANCE_URL = "oktaInstanceUrl";
+    public static final String OKTA_DEFAULT_SCOPE = "defaultScope";
     public static final String OKTA_AUTHORIZATION_SERVER_ID = "authorizationServerId";
     public static final String TOKEN_SCOPE = "tokenScope";
     public static final String TOKEN_GRANT_TYPE = "tokenGrantType";

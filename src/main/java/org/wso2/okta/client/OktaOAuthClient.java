@@ -423,7 +423,8 @@ public class OktaOAuthClient extends AbstractKeyManager {
         parameters.add(new BasicNameValuePair(OktaConstants.GRANT_TYPE, (String) grantType));
         String scopeString = convertToString(accessTokenRequest.getScope());
         if (StringUtils.isEmpty(scopeString)) {
-            handleException(String.format("Scope cannot be empty for the Consumer Key %s", clientId));
+            parameters.add(new BasicNameValuePair(OktaConstants.ACCESS_TOKEN_SCOPE,
+                    configuration.getParameter(OktaConstants.OKTA_DEFAULT_SCOPE)));
         } else {
             parameters.add(new BasicNameValuePair(OktaConstants.ACCESS_TOKEN_SCOPE, scopeString));
         }
