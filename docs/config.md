@@ -84,12 +84,19 @@ Create an Okta developer account. Get the Instance URL, authorization server ID,
     client_secret = "xxxxxxxxxxxxxxxxxxx"
     ```
     **Note**
+
     **oktaInstanceUrl** : Url generated in the section 1
+
     **defaultScope** : Scope defined in the point 3 in section 2
+
     **authorizationServerId** : Server id which was created in point 2 in section 2
+
     **apiKey** : Token generated in section 3
+
     **client_id** : Client id generated from section 6
+
     **client_secret** : Client secret generated from section 6
+    
 
 1. The API Store sub theme is re-written to change the UI for this scenario. Follow the steps below to configure the UI :
     1. Copy the `locale_default.json` file from [here](https://github.com/wso2-extensions/apim-keymanager-okta/blob/OKTA-OAuth-Client-1.0.0/src/main/resources/locale_default.json) and paste it into the `<API-M_HOME>/repository/deployment/server/jaggeryapps/store/site/conf/locales/jaggery` directory.
