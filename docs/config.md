@@ -86,17 +86,11 @@ Create an Okta developer account. Get the Instance URL, authorization server ID,
     **Note**
 
     **oktaInstanceUrl** : Url generated in the section 1
-
     **defaultScope** : Scope defined in the point 3 in section 2
-
     **authorizationServerId** : Server id which was created in point 2 in section 2
-
     **apiKey** : Token generated in section 3
-
     **client_id** : Client id generated from section 6
-
-    **client_secret** : Client secret generated from section 6
-    
+    **client_secret** : Client secret generated from section 6    
 
 1. The API Store sub theme is re-written to change the UI for this scenario. Follow the steps below to configure the UI :
     1. Copy the `locale_default.json` file from [here](https://github.com/wso2-extensions/apim-keymanager-okta/blob/OKTA-OAuth-Client-1.0.0/src/main/resources/locale_default.json) and paste it into the `<API-M_HOME>/repository/deployment/server/jaggeryapps/store/site/conf/locales/jaggery` directory.
@@ -206,7 +200,7 @@ You have connected WSO2 API Manager with a third-party Okta authorization server
             -d "client_id=<client_id>&client_secret=<secret>&grant_type=client_credentials&scope=default"
         ```
     
-5. **Invoke an API
+5. **Invoke an API**
     1. Log in to the Publisher portal and publish an API.
     2. Log in to the Dev portal and subscribe the API to the previously created Application in step 1.
        ![alt text](images/subscribe.png)
@@ -266,31 +260,31 @@ You have connected WSO2 API Manager with a third-party Okta authorization server
         
 9.  **Provision an Out-of-Band OAuth Client :** Provision an OAuth client created in the Okta server.
     
-    Enable the option to provide out-of-band keys by opening the `<API-M_HOME>/repository/deployment/server/jaggeryapps/store/site/conf/site.json` file and changing the `"mapExistingAuthApps"` setting to `true`.
+    Enable the option to provide out-of-band keys by opening the `<API-M_HOME>repository/conf/deployment.toml` file and uncommenting the `#[apim.devportal]` setting to `enable_key_provisioning = true`.
 
-      > ``"mapExistingAuthApps" : true`
-    
-    1. Store UI : 
+      ```
+        [apim.devportal]
+        enable_key_provisioning = true
+      ```
+    **Prerequisites**
+    Create an application in Okta as mentioned in the step 6 in section 1 and get the client id and the client secret.
+
+    1. Dev portal UI : 
         
         After creating an application, go to the **Production Keys** tab of the Application.
     
-         ![alt text](images/map_application.png)
-    
-        Click Provide Keys under Map Existing OAuth Keys.
+        Go to Provide Keys under Provide Existing OAuth Keys.
         
          ![alt text](images/map_application_details.png)
     
          Fill out the required parameters and click Save. You will be redirected to the page that has application and access token details.
          
+         ![alt text](images/map_gen_token.png)
+
          >>**Note :** If you have not provide consumer secret, the access token will not be generated.
          
          >>**Note :** Please make a note of this Consumer Secret and Access Token values, as it will be the only one time that you will be able to view it.
 
-    2. cURL command :
-        ```
-        curl -X POST -b cookies https://localhost:9443/store/site/blocks/subscription/subscription-add/ajax/subscription-add.jag -d 'action=mapExistingOauthClient&applicationName=OktaClientApp&keytype=PRODUCTION&callbackUrl=https://www.google.lk&authorizedDomains=ALL&validityTime=3600&client_id=0oadae8nosfopVl7dA0h7&jsonParams={"username":"admin","key_type":"PRODUCTION","client_secret":"bsdsds7-MN0vivfHLO37VyB9M1P19-Ku2qF8OAHH","validityPeriod":"3600", "tokenScope":"test", "tokenGrantType" : "client_credentials"}'
-        ```
-    
 10. **Clean partially-created keys :**
 
     Clean any partially-created keys from the API Manager database, before adding a new subscription. Partially-created keys can remain in the API Manager databases when an OAuth application of a third-party Okta server gets deleted through the API Store UI. It only deletes the mapping that is maintained within API Manager.
