@@ -33,7 +33,7 @@ Create an Okta developer account. Get the Instance URL, authorization server ID,
     2. Click **Create Token** and provide the name for the token.
     3. After successful token creation, copy the Token value for the further use.
     
-    ![alt text](images/default_scope.png)
+    ![alt text](images/token.png)
 
 4. Create Access Policies : If you already have at least one access policy in your authorization server, skip the following steps and go to `step 1: (5)`.
 
