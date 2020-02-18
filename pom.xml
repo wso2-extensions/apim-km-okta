@@ -133,8 +133,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -178,7 +178,7 @@
         </plugins>
     </build>
     <properties>
-        <carbon.apimgt.version>6.1.66</carbon.apimgt.version>
+        <carbon.apimgt.version>6.6.62</carbon.apimgt.version>
         <json.simple.version>1.1</json.simple.version>
         <gson.version>2.1</gson.version>
     </properties>

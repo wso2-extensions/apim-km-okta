@@ -75,6 +75,7 @@ public class OktaConstants {
     public static final String STRING_FORMAT = "%s %s";
     public static final String ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER = "Error has occurred while reading " +
             "or closing buffer reader";
+    public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
 
     OktaConstants() {
     }
