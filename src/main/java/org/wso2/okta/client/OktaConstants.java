@@ -65,6 +65,7 @@ public class OktaConstants {
     public static final String ACCESS_TOKEN_IDENTIFIER = "jti";
     public static final String ACCESS_TOKEN_EXPIRES_IN = "expires_in";
     public static final String OKTA_INSTANCE_URL = "oktaInstanceUrl";
+    public static final String OKTA_DEFAULT_SCOPE = "defaultScope";
     public static final String OKTA_AUTHORIZATION_SERVER_ID = "authorizationServerId";
     public static final String TOKEN_SCOPE = "tokenScope";
     public static final String TOKEN_GRANT_TYPE = "tokenGrantType";
@@ -75,6 +76,7 @@ public class OktaConstants {
     public static final String STRING_FORMAT = "%s %s";
     public static final String ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER = "Error has occurred while reading " +
             "or closing buffer reader";
+    public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
 
     OktaConstants() {
     }
