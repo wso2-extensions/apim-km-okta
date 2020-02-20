@@ -6,9 +6,11 @@ by WSO2 API Manager. We have a sample client implementation that consumes the AP
 
 ## Getting Started
 
-To get started, go to [Integrate WSO2 API Store with an external IAM using the Okta OAuth authorization server](docs/config.md).
+To get started, go to [Integrate WSO2 API Store with an external IAM using the Okta OAuth authorization server](docs/config.md). 
 
 ## Build
+
+APIM 3.x version related code can be found in the master branch. APIM 2.6 related code can be found in 2.x branch
 
 Use the following command to build this implementation
 `mvn clean install`
