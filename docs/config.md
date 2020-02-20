@@ -271,23 +271,18 @@ You have connected WSO2 API Manager with a third-party Okta authorization server
          >>**Note :** Please make a note of this Consumer Secret and Access Token values, as it will be the only one time that you will be able to view it.
 
 8.  **Revoke the token and re-generate the access token from the OAuth Provider :**
+    1.  Replace `<ConsumerKey:ConsumerSecret>` with the `Base64 encoded ConsumerKey:ConsumerSecret` of the client application you just created.
+    ```
+         curl -k -d "token=eyJraWQiOiJHTmtDeWd3dklXLTJjV1pGaXNVMkdKa2dXRi1WRk04R2tzeDc4VHZwTU00IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULm5oNmhlNy0yNm1YZUgxc" -H "Authorization: Basic <ConsumerKey:ConsumerSecret>" -H "Content-Type: application/x-www-form-urlencoded" https://dev-76321439.oktapreview.com/oauth2/default/v1/revoke
+    ```
+    2.  Obtain a token from the OAuth Provider.
+           Replace `<ConsumerKey:ConsumerSecret>` with the `Base64 encoded ConsumerKey:ConsumerSecret` of the client application you just created.
+    ```
+        curl -k -d "grant_type=client_credentials&scope=test" -H "Authorization: Basic <ConsumerKey:ConsumerSecret>" -H "Content-Type: application/x-www-form-urlencoded" https://dev-76321439.oktapreview.com/oauth2/default/v1/token
+    ```
   <!--  1. Dev Portal UI : 
     
         Go to the **Production Keys** tab of the Application. Provide the token scope and click **Regenerate**.
     
         >> **Note :** Please make a note of this Consumer Secret and Access Token values, as it will be the only one time that you will be able to view it.
 -->
-    
-        1. Replace `<ConsumerKey:ConsumerSecret>` with the `Base64 encoded ConsumerKey:ConsumerSecret` of the client application you just created.
-              ```
-              curl -k -d "token=eyJraWQiOiJHTmtDeWd3dklXLTJjV1pGaXNVMkdKa2dXRi1WRk04R2tzeDc4VHZwTU00IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULm5oNmhlNy0yNm1YZUgxc" -H "Authorization: Basic <ConsumerKey:ConsumerSecret>" -H "Content-Type: application/x-www-form-urlencoded" https://dev-76321439.oktapreview.com/oauth2/default/v1/revoke
-              ```
-              
-            After revoking the access token, you need to follow the step below to regenerate the new access token.
-        
-        2. Obtain a token from the OAuth Provider.
-           Replace `<ConsumerKey:ConsumerSecret>` with the `Base64 encoded ConsumerKey:ConsumerSecret` of the client application you just created.
-              ```
-              curl -k -d "grant_type=client_credentials&scope=test" -H "Authorization: Basic <ConsumerKey:ConsumerSecret>" -H "Content-Type: application/x-www-form-urlencoded" https://dev-76321439.oktapreview.com/oauth2/default/v1/token
-              ```
-            
