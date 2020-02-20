@@ -215,8 +215,22 @@ You have connected WSO2 API Manager with a third-party Okta authorization server
            E.g.,
             ``` json
             {"response_types":"code,token,id_token","grant_types":"refresh_token,authorization_code,implicit","token_endpoint_auth_method": "client_secret_basic","application_type": "web", "updateAppInOkta" : "true"}'
-            ```
             
+            ```
+            curl -X PUT \
+                -H "Content-Type: application/json" -H "Authorization: Bearer e3f6a2f4-1b88-3458-8a39-99e54c7d283a" \
+                -d'{
+                "supportedGrantTypes":[
+                    "refresh_token",
+                    "authorization_code",
+                    "implicit",
+                    "client_credentials",
+                    "password"
+                ],
+                "callbackUrl":"http://localhost",
+                "keyType":"PRODUCTION",
+                "additionalProperties":"{\"response_types\":\"code,token,id_token\",\"grant_types\":\"refresh_token,authorization_code,implicit\",\"token_endpoint_auth_method\": \"client_secret_basic\",\"application_type\": \"web\", \"updateAppInOkta\" : \"true\"}"
+                }' -k https://localhost:9443/api/am/store/v1/applications/4f320831-98eb-45a1-99eb-aa4c2b60c03f/keys/PRODUCTION
             ```
            
 7.  **Delete an OAuth Application :** 
