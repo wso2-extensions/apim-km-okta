@@ -599,6 +599,13 @@ $(document).ready(function() {
                 { "data": "apiCount" },
                 { "data": "name",
                   "render": function ( data, type, rec, meta ) {
+                      
+                      // show delete and edit actions
+                      rec.isOwner = true;
+                      if (loggedInUser.toLowerCase() !== rec.owner.toLowerCase()) {
+                        rec.isOwner = false;
+                      }
+
                       rec.isActive = false;
                       if(rec.status=='APPROVED'){
                           rec.isActive = true;
