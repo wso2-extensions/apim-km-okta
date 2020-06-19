@@ -47,6 +47,7 @@ import org.wso2.carbon.apimgt.api.model.KeyManagerConfiguration;
 import org.wso2.carbon.apimgt.api.model.OAuthAppRequest;
 import org.wso2.carbon.apimgt.api.model.OAuthApplicationInfo;
 import org.wso2.carbon.apimgt.api.model.Scope;
+import org.wso2.carbon.apimgt.api.model.URITemplate;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.AbstractKeyManager;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
@@ -69,6 +70,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -154,6 +156,13 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     clientId));
         }
         return createOAuthAppInfoFromResponse(updatedClientInfo);
+    }
+
+    @Override
+    public OAuthApplicationInfo updateApplicationOwner(OAuthAppRequest appInfoDTO, String owner)
+            throws APIManagementException {
+
+        return null;
     }
 
     /**
@@ -643,15 +652,80 @@ public class OktaOAuthClient extends AbstractKeyManager {
     @Override
     public Map<String, Set<Scope>> getScopesForAPIS(String apiIdsString) throws APIManagementException {
 
-        log.debug("Invoking getScopesForAPIS() method for apiId " + apiIdsString);
+
+        Map<String, Set<Scope>> apiToScopeMapping = new HashMap<>();
         ApiMgtDAO apiMgtDAO = ApiMgtDAO.getInstance();
-        Map<String, Set<Scope>> scopes = apiMgtDAO.getScopesForAPIS(apiIdsString);
-        return scopes;
+        Map<String, Set<String>> apiToScopeKeyMapping = apiMgtDAO.getScopesForAPIS(apiIdsString);
+        for (String apiId : apiToScopeKeyMapping.keySet()) {
+            Set<Scope> apiScopes = new LinkedHashSet<>();
+            Set<String> scopeKeys = apiToScopeKeyMapping.get(apiId);
+            for (String scopeKey : scopeKeys) {
+                Scope scope = getScopeByName(scopeKey);
+                apiScopes.add(scope);
+            }
+            apiToScopeMapping.put(apiId, apiScopes);
+        }
+        return apiToScopeMapping;
+    }
+
+    @Override
+    public void registerScope(Scope scope) throws APIManagementException {
+
+    }
+
+    @Override
+    public Scope getScopeByName(String name) throws APIManagementException {
+
+        return null;
+    }
+
+    @Override
+    public Map<String, Scope> getAllScopes() throws APIManagementException {
+
+        return null;
+    }
+
+    @Override
+    public void attachResourceScopes(API api, Set<URITemplate> uriTemplates) throws APIManagementException {
+
+    }
+
+    @Override
+    public void updateResourceScopes(API api, Set<String> oldLocalScopeKeys, Set<Scope> newLocalScopes,
+                                     Set<URITemplate> oldURITemplates, Set<URITemplate> newURITemplates)
+            throws APIManagementException {
+
+    }
+
+    @Override
+    public void detachResourceScopes(API api, Set<URITemplate> uriTemplates) throws APIManagementException {
+
+    }
+
+    @Override
+    public void deleteScope(String scopeName) throws APIManagementException {
+
+    }
+
+    @Override
+    public void updateScope(Scope scope) throws APIManagementException {
+
+    }
+
+    @Override
+    public boolean isScopeExists(String scopeName) throws APIManagementException {
+
+        return false;
+    }
+
+    @Override
+    public void validateScopes(Set<Scope> scopes) throws APIManagementException {
+
     }
 
     @Override
     public String getType() {
 
-        return "okta";
+        return OktaConstants.OKTA_TYPE;
     }
 }
