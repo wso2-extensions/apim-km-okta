@@ -20,8 +20,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.wso2.okta.client</groupId>
-    <artifactId>org.wso2.okta.client</artifactId>
+    <groupId>org.wso2.km.ext.okta</groupId>
+    <artifactId>okta.auth.client</artifactId>
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <parent>
@@ -87,7 +87,7 @@
                 <version>${feign.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.okta.client</groupId>
+                <groupId>org.wso2.km.ext.okta</groupId>
                 <artifactId>okta.key.manager</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -178,12 +178,12 @@
     <scm>
         <connection>scm:git:https://github.com/wso2-extensions/apim-keymanager-okta.git</connection>
         <url>https://github.com/wso2-extensions/apim-keymanager-okta.git</url>
-        <developerConnection>scm:git:https://github.com/wso2-extensions/apim-keymanager-okta</developerConnection>
+        <developerConnection>scm:git:https://github.com/wso2-extensions/apim-keymanager-okta.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
     <properties>
-        <carbon.apimgt.version>6.7.19</carbon.apimgt.version>
+        <carbon.apimgt.version>6.7.52</carbon.apimgt.version>
         <json.simple.version>1.1</json.simple.version>
         <gson.version>2.1</gson.version>
         <carbon.p2.plugin.version>1.5.3</carbon.p2.plugin.version>
