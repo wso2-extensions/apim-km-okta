@@ -77,6 +77,12 @@ public class OktaConstants {
     public static final String ERROR_OCCURRED_WHILE_READ_OR_CLOSE_BUFFER_READER = "Error has occurred while reading " +
             "or closing buffer reader";
     public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
+    public static final String TOS_URI = "tos_uri";
+    public static final String POLICY_URI = "policy_uri";
+    public static final String REQUEST_OBJECT_SIGNING_ALGORITHM = "request_object_signing_alg";
+    public static final String JWKS = "jwks";
+    public static final String SCOPE = "scp";
+    public static final String OKTA_TYPE = "okta";
 
     OktaConstants() {
     }
