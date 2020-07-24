@@ -82,7 +82,7 @@ public class OktaConstants {
     public static final String REQUEST_OBJECT_SIGNING_ALGORITHM = "request_object_signing_alg";
     public static final String JWKS = "jwks";
     public static final String SCOPE = "scp";
-    public static final String OKTA_TYPE = "okta";
+    public static final String OKTA_TYPE = "Okta";
 
     OktaConstants() {
     }
