@@ -30,8 +30,7 @@ import java.util.List;
 @Component(
         name = "okta.configuration.component",
         immediate = true,
-        service = KeyManagerConnectorConfiguration.class,
-        property = {"type=" + OktaConstants.OKTA_TYPE}
+        service = KeyManagerConnectorConfiguration.class
 )
 public class OKTAConnectorConfiguration implements KeyManagerConnectorConfiguration {
 
@@ -82,5 +81,11 @@ public class OKTAConnectorConfiguration implements KeyManagerConnectorConfigurat
                         "select", "How to Authenticate Token Endpoint", "client_secret_basic", true,
                         true, Arrays.asList("client_secret_basic", "client_secret_post", "client_secret_jwt"), false));
         return configurationDtoList;
+    }
+
+    @Override
+    public String getType() {
+
+        return OktaConstants.OKTA_TYPE;
     }
 }
