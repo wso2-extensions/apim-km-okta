@@ -68,7 +68,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -149,20 +148,26 @@ public class OktaOAuthClient extends AbstractKeyManager {
         OAuthApplicationInfo oAuthApplicationInfo = oAuthAppRequest.getOAuthApplicationInfo();
         ClientInfo clientInfo = createClientInfoFromOauthApplicationInfo(oAuthApplicationInfo);
         String clientId = oAuthApplicationInfo.getClientId();
-        ClientInfo updatedClientInfo = oktaDCRClient.updateApplication(clientId, clientInfo);
-
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Updating an OAuth client in Okta authorization server for the Consumer Key %s",
-                    clientId));
+        ClientInfo clientInfoFromOkta = oktaDCRClient.getApplication(clientId);
+        if (clientInfoFromOkta != null &&
+                clientInfoFromOkta.getApplicationType().equals(clientInfo.getApplicationType())) {
+            ClientInfo updatedClientInfo = oktaDCRClient.updateApplication(clientId, clientInfo);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Updating an OAuth client in Okta authorization server for the Consumer Key %s",
+                        clientId));
+            }
+            return createOAuthAppInfoFromResponse(updatedClientInfo);
+        } else {
+            throw new APIManagementException("Error occured while updating Oauth Client in Okta Authorization server " +
+                    "due to read-only attribute change");
         }
-        return createOAuthAppInfoFromResponse(updatedClientInfo);
     }
 
     @Override
     public OAuthApplicationInfo updateApplicationOwner(OAuthAppRequest appInfoDTO, String owner)
             throws APIManagementException {
 
-        return null;
+        return appInfoDTO.getOAuthApplicationInfo();
     }
 
     /**
@@ -518,6 +523,15 @@ public class OktaOAuthClient extends AbstractKeyManager {
 
         if (clientInfo.getGrantTypes() != null) {
             appInfo.addParameter(OktaConstants.CLIENT_GRANT_TYPES, String.join(" ", clientInfo.getGrantTypes()));
+        }
+        if (StringUtils.isNotEmpty(clientInfo.getClientName())){
+            appInfo.addParameter(ApplicationConstants.OAUTH_CLIENT_NAME,clientInfo.getClientName());
+        }
+        if (StringUtils.isNotEmpty(clientInfo.getClientId())){
+            appInfo.addParameter(ApplicationConstants.OAUTH_CLIENT_ID,clientInfo.getClientId());
+        }
+        if (StringUtils.isNotEmpty(clientInfo.getClientSecret())) {
+            appInfo.addParameter(ApplicationConstants.OAUTH_CLIENT_SECRET, clientInfo.getClientSecret());
         }
         String additionalProperties = new Gson().toJson(clientInfo);
         appInfo.addParameter(APIConstants.JSON_ADDITIONAL_PROPERTIES,new Gson().fromJson(additionalProperties,Map.class));
