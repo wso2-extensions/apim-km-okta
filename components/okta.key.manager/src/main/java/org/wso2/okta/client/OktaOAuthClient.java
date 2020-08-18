@@ -33,12 +33,15 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.wso2.carbon.apimgt.api.APIManagementException;
+import org.wso2.carbon.apimgt.api.ErrorHandler;
+import org.wso2.carbon.apimgt.api.ErrorItem;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.AccessTokenInfo;
 import org.wso2.carbon.apimgt.api.model.AccessTokenRequest;
@@ -60,6 +63,7 @@ import org.wso2.okta.client.model.IntrospectInfo;
 import org.wso2.okta.client.model.JWKS;
 import org.wso2.okta.client.model.OKtaAPIKeyInterceptor;
 import org.wso2.okta.client.model.OktaDCRClient;
+import org.wso2.okta.client.model.OktaError;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -569,13 +573,17 @@ public class OktaOAuthClient extends AbstractKeyManager {
                 handleException(String.format(OktaConstants.STRING_FORMAT,
                         OktaConstants.ERROR_COULD_NOT_READ_HTTP_ENTITY, response));
             }
+            String content = "";
+            try (InputStream inputStream = entity.getContent()) {
+                content = IOUtils.toString(inputStream);
+
+            }
             if (HttpStatus.SC_OK == statusCode) {
 
-                try (InputStream inputStream = entity.getContent()) {
-                    String content = IOUtils.toString(inputStream);
-                    return new Gson().fromJson(content, org.wso2.okta.client.model.AccessTokenInfo.class);
-
-                }
+                return new Gson().fromJson(content, org.wso2.okta.client.model.AccessTokenInfo.class);
+            } else {
+                    OktaError error =  new Gson().fromJson(content, org.wso2.okta.client.model.OktaError.class);
+                handleError(response.getStatusLine(), error.toString());
             }
         } catch (UnsupportedEncodingException e) {
             handleException(OktaConstants.ERROR_ENCODING_METHOD_NOT_SUPPORTED, e);
@@ -654,6 +662,22 @@ public class OktaOAuthClient extends AbstractKeyManager {
 
         log.error(msg);
         throw new APIManagementException(msg);
+    }
+
+    /**
+     * Common method to throw exceptions. This will only expect one parameter.
+     *
+     * @param statusLine error status coming from Okta as a StatusLine.
+     * @param msg error message as a String.
+     * @throws APIManagementException This is the custom exception class for API management.
+     */
+    private static void handleError(StatusLine statusLine, String msg) throws APIManagementException {
+        log.error(msg);
+        ErrorItem errorItem = new ErrorItem();
+        errorItem.setStatusCode(statusLine.getStatusCode());
+        errorItem.setDescription(statusLine.getReasonPhrase());
+        errorItem.setMessage(msg);
+        throw new APIManagementException(msg, errorItem);
     }
 
     @Override
