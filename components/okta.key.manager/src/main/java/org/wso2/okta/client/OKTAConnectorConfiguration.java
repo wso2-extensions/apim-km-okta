@@ -88,4 +88,16 @@ public class OKTAConnectorConfiguration implements KeyManagerConnectorConfigurat
 
         return OktaConstants.OKTA_TYPE;
     }
+
+    @Override
+    public String getDefaultScopesClaim() {
+
+        return OktaConstants.SCOPE;
+    }
+
+    @Override
+    public String getDefaultConsumerKeyClaim() {
+
+        return OktaConstants.CID;
+    }
 }

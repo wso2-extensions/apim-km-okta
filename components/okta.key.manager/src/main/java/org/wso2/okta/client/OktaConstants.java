@@ -83,6 +83,7 @@ public class OktaConstants {
     public static final String JWKS = "jwks";
     public static final String SCOPE = "scp";
     public static final String OKTA_TYPE = "Okta";
+    public static final String CID = "cid";
 
     OktaConstants() {
     }
