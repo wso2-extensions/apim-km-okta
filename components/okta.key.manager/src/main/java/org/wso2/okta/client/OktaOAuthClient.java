@@ -40,43 +40,22 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.wso2.carbon.apimgt.api.APIManagementException;
-import org.wso2.carbon.apimgt.api.ErrorHandler;
 import org.wso2.carbon.apimgt.api.ErrorItem;
-import org.wso2.carbon.apimgt.api.model.API;
+import org.wso2.carbon.apimgt.api.ExceptionCodes;
 import org.wso2.carbon.apimgt.api.model.AccessTokenInfo;
-import org.wso2.carbon.apimgt.api.model.AccessTokenRequest;
-import org.wso2.carbon.apimgt.api.model.ApplicationConstants;
-import org.wso2.carbon.apimgt.api.model.KeyManagerConfiguration;
-import org.wso2.carbon.apimgt.api.model.OAuthAppRequest;
-import org.wso2.carbon.apimgt.api.model.OAuthApplicationInfo;
-import org.wso2.carbon.apimgt.api.model.Scope;
-import org.wso2.carbon.apimgt.api.model.URITemplate;
+import org.wso2.carbon.apimgt.api.model.*;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.AbstractKeyManager;
-import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
+import org.wso2.carbon.apimgt.impl.kmclient.KeyManagerClientException;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
-import org.wso2.okta.client.model.ClientInfo;
-import org.wso2.okta.client.model.IntrospectClient;
-import org.wso2.okta.client.model.IntrospectInfo;
-import org.wso2.okta.client.model.JWKS;
-import org.wso2.okta.client.model.OKtaAPIKeyInterceptor;
-import org.wso2.okta.client.model.OktaDCRClient;
-import org.wso2.okta.client.model.OktaError;
+import org.wso2.okta.client.model.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class provides the implementation to use "Okta" for managing
@@ -103,7 +82,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
         String apiKey = (String) configuration.getParameter(OktaConstants.REGISTRAION_API_KEY);
         oktaDCRClient =
                 Feign.builder().client(new OkHttpClient()).encoder(new GsonEncoder()).decoder(new GsonDecoder())
-                        .logger(new Slf4jLogger()).requestInterceptor(new OKtaAPIKeyInterceptor(apiKey))
+                        .logger(new Slf4jLogger()).requestInterceptor(new OKtaAPIKeyInterceptor(apiKey)).errorDecoder(new OktaErrorDecoder())
                         .target(OktaDCRClient.class, clientRegistrationEndpoint);
         String introspectEndpoint =
                 (String) configuration.getParameter(APIConstants.KeyManager.INTROSPECTION_ENDPOINT);
@@ -129,11 +108,15 @@ public class OktaOAuthClient extends AbstractKeyManager {
         OAuthApplicationInfo oAuthApplicationInfo = oAuthAppRequest.getOAuthApplicationInfo();
 
         ClientInfo clientInfo = createClientInfoFromOauthApplicationInfo(oAuthApplicationInfo);
-        ClientInfo createdApplication = oktaDCRClient.createApplication(clientInfo);
+        try {
+            ClientInfo createdApplication = oktaDCRClient.createApplication(clientInfo);
+            if (createdApplication != null) {
+                oAuthApplicationInfo = createOAuthAppInfoFromResponse(createdApplication);
+                return oAuthApplicationInfo;
+            }
 
-        if (createdApplication != null) {
-            oAuthApplicationInfo = createOAuthAppInfoFromResponse(createdApplication);
-            return oAuthApplicationInfo;
+        } catch (KeyManagerClientException e) {
+            handleException("Error while creating Oauth Application", e);
         }
         return null;
     }
@@ -152,15 +135,26 @@ public class OktaOAuthClient extends AbstractKeyManager {
         OAuthApplicationInfo oAuthApplicationInfo = oAuthAppRequest.getOAuthApplicationInfo();
         ClientInfo clientInfo = createClientInfoFromOauthApplicationInfo(oAuthApplicationInfo);
         String clientId = oAuthApplicationInfo.getClientId();
-        ClientInfo clientInfoFromOkta = oktaDCRClient.getApplication(clientId);
+        ClientInfo clientInfoFromOkta = null;
+        try {
+            clientInfoFromOkta = oktaDCRClient.getApplication(clientId);
+        } catch (KeyManagerClientException e) {
+            handleException("Error while retrieving Oauth Application", e);
+        }
         if (clientInfoFromOkta != null &&
                 clientInfoFromOkta.getApplicationType().equals(clientInfo.getApplicationType())) {
-            ClientInfo updatedClientInfo = oktaDCRClient.updateApplication(clientId, clientInfo);
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("Updating an OAuth client in Okta authorization server for the Consumer Key %s",
-                        clientId));
+            ClientInfo updatedClientInfo = null;
+            try {
+                updatedClientInfo = oktaDCRClient.updateApplication(clientId, clientInfo);
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Updating an OAuth client in Okta authorization server for the Consumer Key %s",
+                            clientId));
+                }
+                return createOAuthAppInfoFromResponse(updatedClientInfo);
+            } catch (KeyManagerClientException e) {
+                handleException("Error while updating Oauth Application", e);
+                return null;
             }
-            return createOAuthAppInfoFromResponse(updatedClientInfo);
         } else {
             throw new APIManagementException("Error occured while updating Oauth Client in Okta Authorization server " +
                     "due to read-only attribute change");
@@ -183,7 +177,11 @@ public class OktaOAuthClient extends AbstractKeyManager {
     @Override
     public void deleteApplication(String clientId) throws APIManagementException {
 
-        oktaDCRClient.deleteApplication(clientId);
+        try {
+            oktaDCRClient.deleteApplication(clientId);
+        } catch (KeyManagerClientException e) {
+            handleException("Error while Deleting Oauth Application", e);
+        }
     }
 
     /**
@@ -196,8 +194,13 @@ public class OktaOAuthClient extends AbstractKeyManager {
     @Override
     public OAuthApplicationInfo retrieveApplication(String clientId) throws APIManagementException {
 
-        ClientInfo retrievedClientInfo = oktaDCRClient.getApplication(clientId);
-        return createOAuthAppInfoFromResponse(retrievedClientInfo);
+        try {
+            ClientInfo retrievedClientInfo = oktaDCRClient.getApplication(clientId);
+            return createOAuthAppInfoFromResponse(retrievedClientInfo);
+        } catch (KeyManagerClientException e) {
+            handleException("Error while retrieving Oauth Application", e);
+            return null;
+        }
     }
 
     /**
@@ -303,7 +306,6 @@ public class OktaOAuthClient extends AbstractKeyManager {
 
         return tokenRequest;
     }
-
 
 
     /**
@@ -448,7 +450,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
         }
         Object parameter = oAuthApplicationInfo.getParameter(APIConstants.JSON_ADDITIONAL_PROPERTIES);
         Map<String, Object> additionalProperties = new HashMap<>();
-        if (parameter instanceof  String){
+        if (parameter instanceof String) {
             additionalProperties = new Gson().fromJson((String) parameter, Map.class);
         }
         clientInfo.setClientName(applicationName);
@@ -484,7 +486,11 @@ public class OktaOAuthClient extends AbstractKeyManager {
                     (List) additionalProperties.get(OktaConstants.CLIENT_POST_LOGOUT_REDIRECT_URIS));
         }
         if (additionalProperties.containsKey(OktaConstants.CLIENT_RESPONSE_TYPES)) {
-            clientInfo.setResponseTypes((List) additionalProperties.get(OktaConstants.CLIENT_RESPONSE_TYPES));
+            if (additionalProperties.get(OktaConstants.CLIENT_RESPONSE_TYPES) instanceof String) {
+                clientInfo.setResponseTypes(Arrays.asList((String) additionalProperties.get(OktaConstants.CLIENT_RESPONSE_TYPES)));
+            } else {
+                clientInfo.setResponseTypes((List) additionalProperties.get(OktaConstants.CLIENT_RESPONSE_TYPES));
+            }
         }
         if (additionalProperties.containsKey(OktaConstants.CLIENT_TOKEN_ENDPOINT_AUTH_METHOD)) {
             clientInfo.setTokenEndpointAuthMethod(
@@ -528,17 +534,17 @@ public class OktaOAuthClient extends AbstractKeyManager {
         if (clientInfo.getGrantTypes() != null) {
             appInfo.addParameter(OktaConstants.CLIENT_GRANT_TYPES, String.join(" ", clientInfo.getGrantTypes()));
         }
-        if (StringUtils.isNotEmpty(clientInfo.getClientName())){
-            appInfo.addParameter(ApplicationConstants.OAUTH_CLIENT_NAME,clientInfo.getClientName());
+        if (StringUtils.isNotEmpty(clientInfo.getClientName())) {
+            appInfo.addParameter(ApplicationConstants.OAUTH_CLIENT_NAME, clientInfo.getClientName());
         }
-        if (StringUtils.isNotEmpty(clientInfo.getClientId())){
-            appInfo.addParameter(ApplicationConstants.OAUTH_CLIENT_ID,clientInfo.getClientId());
+        if (StringUtils.isNotEmpty(clientInfo.getClientId())) {
+            appInfo.addParameter(ApplicationConstants.OAUTH_CLIENT_ID, clientInfo.getClientId());
         }
         if (StringUtils.isNotEmpty(clientInfo.getClientSecret())) {
             appInfo.addParameter(ApplicationConstants.OAUTH_CLIENT_SECRET, clientInfo.getClientSecret());
         }
         String additionalProperties = new Gson().toJson(clientInfo);
-        appInfo.addParameter(APIConstants.JSON_ADDITIONAL_PROPERTIES,new Gson().fromJson(additionalProperties,Map.class));
+        appInfo.addParameter(APIConstants.JSON_ADDITIONAL_PROPERTIES, new Gson().fromJson(additionalProperties, Map.class));
         return appInfo;
     }
 
@@ -582,7 +588,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
 
                 return new Gson().fromJson(content, org.wso2.okta.client.model.AccessTokenInfo.class);
             } else {
-                    OktaError error =  new Gson().fromJson(content, org.wso2.okta.client.model.OktaError.class);
+                OktaError error = new Gson().fromJson(content, org.wso2.okta.client.model.OktaError.class);
                 handleError(response.getStatusLine(), error.toString());
             }
         } catch (UnsupportedEncodingException e) {
@@ -596,7 +602,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
     /**
      * Update the access token info after getting new access token.
      *
-     * @param tokenInfo    Token info need to be updated.
+     * @param tokenInfo Token info need to be updated.
      * @return AccessTokenInfo
      */
     private AccessTokenInfo updateTokenInfo(AccessTokenInfo tokenInfo,
@@ -668,7 +674,7 @@ public class OktaOAuthClient extends AbstractKeyManager {
      * Common method to throw exceptions. This will only expect one parameter.
      *
      * @param statusLine error status coming from Okta as a StatusLine.
-     * @param msg error message as a String.
+     * @param msg        error message as a String.
      * @throws APIManagementException This is the custom exception class for API management.
      */
     private static void handleError(StatusLine statusLine, String msg) throws APIManagementException {
@@ -683,27 +689,21 @@ public class OktaOAuthClient extends AbstractKeyManager {
     @Override
     public String getNewApplicationConsumerSecret(AccessTokenRequest accessTokenRequest) throws APIManagementException {
 
-        ClientInfo clientInfo = oktaDCRClient.regenerateClientSecret(accessTokenRequest.getClientId());
+        ClientInfo clientInfo = null;
+        try {
+            clientInfo = oktaDCRClient.regenerateClientSecret(accessTokenRequest.getClientId());
+        } catch (KeyManagerClientException e) {
+            handleException("Error while retrieving new consumer secret for  Oauth Application", e);
+            return null;
+        }
         return clientInfo.getClientSecret();
     }
 
     @Override
-    public Map<String, Set<Scope>> getScopesForAPIS(String apiIdsString) throws APIManagementException {
+    public Map<String, Set<Scope>> getScopesForAPIS(String apiIdsString)
+            throws APIManagementException {
 
-
-        Map<String, Set<Scope>> apiToScopeMapping = new HashMap<>();
-        ApiMgtDAO apiMgtDAO = ApiMgtDAO.getInstance();
-        Map<String, Set<String>> apiToScopeKeyMapping = apiMgtDAO.getScopesForAPIS(apiIdsString);
-        for (String apiId : apiToScopeKeyMapping.keySet()) {
-            Set<Scope> apiScopes = new LinkedHashSet<>();
-            Set<String> scopeKeys = apiToScopeKeyMapping.get(apiId);
-            for (String scopeKey : scopeKeys) {
-                Scope scope = getScopeByName(scopeKey);
-                apiScopes.add(scope);
-            }
-            apiToScopeMapping.put(apiId, apiScopes);
-        }
-        return apiToScopeMapping;
+        return null;
     }
 
     @Override
@@ -765,5 +765,12 @@ public class OktaOAuthClient extends AbstractKeyManager {
     public String getType() {
 
         return OktaConstants.OKTA_TYPE;
+    }
+
+    private void handleException(String message, KeyManagerClientException e) throws APIManagementException {
+        if (e.getStatusCode() == 400) {
+            throw new APIManagementException(message, e, ExceptionCodes.from(ExceptionCodes.INVALID_KEY_MANAGER_REQUEST, e.getReason()));
+        }
+        throw new APIManagementException(message, e, ExceptionCodes.from(ExceptionCodes.INTERNAL_SERVER_ERROR_FROM_KEY_MANAGER, e.getReason()));
     }
 }
