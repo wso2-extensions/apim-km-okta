@@ -181,7 +181,7 @@
     </scm>
 
     <properties>
-        <carbon.apimgt.version>9.26.39</carbon.apimgt.version>
+        <carbon.apimgt.version>9.27.0</carbon.apimgt.version>
         <carbon.apimgt.imp.pkg.version>[6.7.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
         <json.simple.version>1.1</json.simple.version>
         <gson.version>2.1</gson.version>
