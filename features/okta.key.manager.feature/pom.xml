@@ -61,11 +61,6 @@
                                 </properties>
                             </adviceFile>
                             <bundles>
-                                <bundleDef>com.google.code.gson:gson:${gson.version}</bundleDef>
-                                <bundleDef>io.github.openfeign:feign-core:${feign.version}</bundleDef>
-                                <bundleDef>io.github.openfeign:feign-gson:${feign.version}</bundleDef>
-                                <bundleDef>io.github.openfeign:feign-okhttp:${feign.version}</bundleDef>
-                                <bundleDef>io.github.openfeign:feign-slf4j:${feign.version}</bundleDef>
                                 <bundleDef>org.wso2.km.ext.okta:okta.key.manager:${project.version}</bundleDef>
                             </bundles>
                         </configuration>
