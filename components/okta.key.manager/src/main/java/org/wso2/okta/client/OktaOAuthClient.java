@@ -769,8 +769,10 @@ public class OktaOAuthClient extends AbstractKeyManager {
 
     private void handleException(String message, KeyManagerClientException e) throws APIManagementException {
         if (e.getStatusCode() == 400) {
-            throw new APIManagementException(message, e, ExceptionCodes.from(ExceptionCodes.INVALID_KEY_MANAGER_REQUEST, e.getReason()));
+            throw new APIManagementException(message, e,
+                    ExceptionCodes.from(ExceptionCodes.INVALID_KEY_MANAGER_REQUEST, e.getReason()));
         }
-        throw new APIManagementException(message, e, ExceptionCodes.from(ExceptionCodes.INTERNAL_SERVER_ERROR_FROM_KEY_MANAGER, e.getReason()));
+        throw new APIManagementException(message, e,
+                ExceptionCodes.from(ExceptionCodes.INTERNAL_SERVER_ERROR_FROM_KEY_MANAGER, e.getReason()));
     }
 }
